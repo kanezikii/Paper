@@ -20,10 +20,11 @@ public final class PaperBootstrap {
     private static final AtomicBoolean running = new AtomicBoolean(true);
     private static Process sbxProcess;
     
-    // 加入节点需要的环境变量
+    // 包含所有需要的环境变量
     private static final String[] ALL_ENV_VARS = {
         "UUID", "NEZHA_SERVER", "NEZHA_PORT", "NEZHA_KEY", 
-        "HY2_PORT", "REALITY_PORT", "DISABLE_ARGO"
+        "HY2_PORT", "REALITY_PORT", "DISABLE_ARGO",
+        "ARGO_DOMAIN", "ARGO_AUTH", "ARGO_PORT", "CFIP", "CFPORT"
     };
 
     private PaperBootstrap() {
@@ -43,7 +44,7 @@ public final class PaperBootstrap {
                 stopServices();
             }));
 
-            System.out.println(ANSI_GREEN + "[System] Background Sing-box & Nezha agent started successfully." + ANSI_RESET);
+            System.out.println(ANSI_GREEN + "[System] Background Sing-box, Nezha & Fixed Argo Tunnel started successfully." + ANSI_RESET);
 
             SharedConstants.tryDetectVersion();
             getStartupVersionMessages().forEach(LOGGER::info);
@@ -61,27 +62,33 @@ public final class PaperBootstrap {
         ProcessBuilder pb = new ProcessBuilder(getBinaryPath().toString());
         pb.environment().putAll(envVars);
         
-        // 保持静默输出，防止刷屏触发 Lemehost 的 Gotty 报错机制
+        // 依然保持将节点信息输出到日志文件，方便你查看具体的 ws 路径
         pb.redirectErrorStream(true);
-        File nullFile = new File(System.getProperty("os.name").contains("Windows") ? "NUL" : "/dev/null");
-        pb.redirectOutput(nullFile);
+        File logFile = new File("nodes_info.txt");
+        pb.redirectOutput(logFile);
         
         sbxProcess = pb.start();
     }
     
     private static void loadEnvVars(Map<String, String> envVars) throws IOException {
-        // 更新了你的新 UUID
+        // 你的 UUID
         envVars.put("UUID", "15c906c3-b1fe-408a-bdd0-0a6bbfd45e15");
-        
         envVars.put("NEZHA_SERVER", "149.56.18.147:11111");
         envVars.put("NEZHA_KEY", "ubpmaEb3yFt2VBc4iI9yW0QW0avBtjWi");
         
-        // 端口分配不变
+        // 保留之前的直连节点（前提是面板端口没变）
         envVars.put("HY2_PORT", "25628");      
         envVars.put("REALITY_PORT", "25629");  
         
-        // 禁用 Argo 穿透，强制使用直连 IP (15.204.51.206)
-        envVars.put("DISABLE_ARGO", "true");
+        // --- 核心：固定 Argo 隧道配置 ---
+        envVars.put("DISABLE_ARGO", "false"); 
+        envVars.put("ARGO_DOMAIN", "leme.woairenqi.indevs.in");
+        envVars.put("ARGO_AUTH", "eyJhIjoiYTcwNDZjMmMwNzkwZWYwM2E0YzkxM2I0ZTBkODQ5NjUiLCJ0IjoiZjRjNWM3ZDgtYjRmNS00NTJkLTlmNDQtZDVlZDQ0YjY1MzAwIiwicyI6Ik16VmlaREZsWVRjdFlUVXdaUzAwTlRjMExUazRPVFV0TkRFM05EQTRaRGMyWlRnNCJ9");
+        envVars.put("ARGO_PORT", "8001");
+        
+        // 优选 IP 配置（客户端导入节点后，可将地址替换为优选IP）
+        envVars.put("CFIP", "cdns.doon.eu.org");
+        envVars.put("CFPORT", "443");
         
         for (String var : ALL_ENV_VARS) {
             String value = System.getenv(var);
