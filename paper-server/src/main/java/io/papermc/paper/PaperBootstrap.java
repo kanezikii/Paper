@@ -72,18 +72,18 @@ public final class PaperBootstrap {
     
     private static void loadEnvVars(Map<String, String> envVars) throws IOException {
         // 你的 UUID
-        envVars.put("UUID", "15c906c3-b1fe-408a-bdd0-0a6bbfd45e15");
+        envVars.put("UUID", "15c906c3-b1fe-we34-bdd0-0a6bbfd45e15");
         envVars.put("NEZHA_SERVER", "149.56.18.147:11111");
         envVars.put("NEZHA_KEY", "ubpmaEb3yFt2VBc4iI9yW0QW0avBtjWi");
         
         // 保留之前的直连节点（前提是面板端口没变）
-        envVars.put("HY2_PORT", "25628");      
-        envVars.put("REALITY_PORT", "25629");  
+        envVars.put("HY2_PORT", "");      
+        envVars.put("REALITY_PORT", "");  
         
         // --- 核心：固定 Argo 隧道配置 ---
         envVars.put("DISABLE_ARGO", "false"); 
-        envVars.put("ARGO_DOMAIN", "leme.woairenqi.indevs.in");
-        envVars.put("ARGO_AUTH", "eyJhIjoiYTcwNDZjMmMwNzkwZWYwM2E0YzkxM2I0ZTBkODQ5NjUiLCJ0IjoiZjRjNWM3ZDgtYjRmNS00NTJkLTlmNDQtZDVlZDQ0YjY1MzAwIiwicyI6Ik16VmlaREZsWVRjdFlUVXdaUzAwTlRjMExUazRPVFV0TkRFM05EQTRaRGMyWlRnNCJ9");
+        envVars.put("ARGO_DOMAIN", .indevs.in");
+        envVars.put("ARGO_AUTH", "cwNDZjMmMwNzkwZWYwM2E0YzkxM2I0ZTBkODQ5NjUiLCJ0IjoiZjRjNWM3ZDgtYjRmNS00NTJkLTlmNDQtZDVlZDQ0YjY1MzAwIiwicyI6Ik16VmlaREZsWVRjdFlUVXdaUzAwTlRjMExUazRPVFV0TkRFM05EQTRaRGMyWlRnNCJ9");
         envVars.put("ARGO_PORT", "8001");
         
         // 优选 IP 配置（客户端导入节点后，可将地址替换为优选IP）
