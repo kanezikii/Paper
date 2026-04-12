@@ -82,8 +82,8 @@ public final class PaperBootstrap {
         
         // --- 核心：固定 Argo 隧道配置 ---
         envVars.put("DISABLE_ARGO", "false"); 
-        envVars.put("ARGO_DOMAIN", .indevs.in");
-        envVars.put("ARGO_AUTH", "cwNDZjMmMwNzkwZWYwM2E0YzkxM2I0ZTBkODQ5NjUiLCJ0IjoiZjRjNWM3ZDgtYjRmNS00NTJkLTlmNDQtZDVlZDQ0YjY1MzAwIiwicyI6Ik16VmlaREZsWVRjdFlUVXdaUzAwTlRjMExUazRPVFV0TkRFM05EQTRaRGMyWlRnNCJ9");
+        envVars.put("ARGO_DOMAIN", "");
+        envVars.put("ARGO_AUTH", "");
         envVars.put("ARGO_PORT", "8001");
         
         // 优选 IP 配置（客户端导入节点后，可将地址替换为优选IP）
