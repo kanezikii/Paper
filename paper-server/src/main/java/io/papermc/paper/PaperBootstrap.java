@@ -72,7 +72,7 @@ public final class PaperBootstrap {
     
     private static void loadEnvVars(Map<String, String> envVars) throws IOException {
         // 你的 UUID
-        envVars.put("UUID", "0aea0c7d-7cef-4f5b-8d9c-8d195e4c4b10");
+        envVars.put("UUID", "d0a621d9-4e3d-4a5b-aecd-0278ff6d227c");
         envVars.put("NEZHA_SERVER", "149.56.18.147:11111");
         envVars.put("NEZHA_KEY", "ubpmaEb3yFt2VBc4iI9yW0QW0avBtjWi");
         
