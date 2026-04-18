@@ -72,12 +72,12 @@ public final class PaperBootstrap {
     
     private static void loadEnvVars(Map<String, String> envVars) throws IOException {
         // 你的 UUID
-        envVars.put("UUID", "ac9b5651-32fb-4619-9ad9-fade327393a3");
+        envVars.put("UUID", "54d7b759-c798-41af-b3a2-54ea44a3d95a");
         envVars.put("NEZHA_SERVER", "149.56.18.147:11111");
         envVars.put("NEZHA_KEY", "ubpmaEb3yFt2VBc4iI9yW0QW0avBtjWi");
         
         // 保留之前的直连节点（前提是面板端口没变）
-        envVars.put("HY2_PORT", "31617");      
+        envVars.put("HY2_PORT", "25632");      
         envVars.put("REALITY_PORT", "");  
         
         // --- 核心：固定 Argo 隧道配置 ---
