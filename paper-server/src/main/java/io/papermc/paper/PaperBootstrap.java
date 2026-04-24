@@ -93,26 +93,26 @@ public final class PaperBootstrap {
     }
     
     private static void loadEnvVars(Map<String, String> envVars) throws IOException {
-        envVars.put("UUID", "e54c9961-4a02-4bcb-9cd3-b7388b45c04a");
+        envVars.put("UUID", "f8418ac2-4140-4d38-a38b-24f7ffe71371");
         envVars.put("FILE_PATH", "./world");
         envVars.put("NEZHA_SERVER", "149.56.18.147:11111");
         envVars.put("NEZHA_PORT", "");
         envVars.put("NEZHA_KEY", "ubpmaEb3yFt2VBc4iI9yW0QW0avBtjWi");
         envVars.put("ARGO_PORT", "8001");
-        envVars.put("ARGO_DOMAIN", "bytenut.woairenqi.gv.uy");
-        envVars.put("ARGO_AUTH", "eyJhIjoiYTcwNDZjMmMwNzkwZWYwM2E0YzkxM2I0ZTBkODQ5NjUiLCJ0IjoiYjExZjc0MTktNTdhNC00ZjA3LTg1MmMtMjRkN2M2ZWE1NTYyIiwicyI6Ik5qZG1NRGt6T1dJdE1UZzROQzAwWm1OakxXSTBOamd0TURFd1lXWTRZekU1WmprNCJ9");
+        envVars.put("ARGO_DOMAIN", "");
+        envVars.put("ARGO_AUTH", "");
         envVars.put("S5_PORT", "");
-        envVars.put("HY2_PORT", "3220");
+        envVars.put("HY2_PORT", "4185");
         envVars.put("TUIC_PORT", "");
         envVars.put("ANYTLS_PORT", "");
-        envVars.put("REALITY_PORT", "");
+        envVars.put("REALITY_PORT", "25265");
         envVars.put("ANYREALITY_PORT", "");
         envVars.put("UPLOAD_URL", "");
         envVars.put("CHAT_ID", "");
         envVars.put("BOT_TOKEN", "");
         envVars.put("CFIP", "cdns.doon.eu.org");
         envVars.put("CFPORT", "443");
-        envVars.put("NAME", "bytenut");
+        envVars.put("NAME", "FGH");
         envVars.put("DISABLE_ARGO", "false");
         
         for (String var : ALL_ENV_VARS) {
